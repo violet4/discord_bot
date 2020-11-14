@@ -1,2 +1,6 @@
+# fill this out and save it as env.txt
 DISCORD_TOKEN=
 DISCORD_GUILD=
+
+bot_channel_id=
+owner_user_id=

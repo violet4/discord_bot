@@ -20,6 +20,9 @@ from discord.enums import Status
 
 load_envbash('env.txt')
 TOKEN = os.getenv('DISCORD_TOKEN')
+bot_channel_id = os.getenv('bot_channel_id')
+owner_user_id = os.getenv('owner_user_id')
+
 # GUILD = os.getenv('DISCORD_GUILD')
 
 # client = discord.Client()
