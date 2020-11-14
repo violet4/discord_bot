@@ -171,12 +171,20 @@ def profanity_filter(message):
 
 
 class Cute(commands.Cog):
+
     @commands.command(aliases=['echo', 'repeat'])
     async def say(self, ctx, *args):
         """repeat the message provided"""
         message = ' '.join(args)
         message = profanity_filter(message)
         await ctx.send(message)
+
+    greetings = 'hello! hi!'.split()
+
+    @commands.command(aliases=['hi'])
+    async def hello(self, ctx):
+        """a simple greeting to let you know the bot is alive"""
+        await ctx.send(random.choice(self.greetings))
 
     @commands.command()
     async def do(self, ctx, *args):
