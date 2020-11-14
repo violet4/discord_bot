@@ -175,6 +175,9 @@ class Cute(commands.Cog):
     @commands.command(aliases=['echo', 'repeat'])
     async def say(self, ctx, *args):
         """repeat the message provided"""
+        if not args:
+            await ctx.send('did you want me to say something?')
+            return
         message = ' '.join(args)
         message = profanity_filter(message)
         await ctx.send(message)
