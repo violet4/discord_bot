@@ -20,26 +20,14 @@ from discord.enums import Status
 
 load_envbash('env.txt')
 TOKEN = os.getenv('DISCORD_TOKEN')
-bot_channel_id = os.getenv('bot_channel_id')
-owner_user_id = os.getenv('owner_user_id')
+bot_channel_id = int(os.getenv('bot_channel_id'))
+owner_user_id = int(os.getenv('owner_user_id'))
 
 # GUILD = os.getenv('DISCORD_GUILD')
 
 # client = discord.Client()
 bot = commands.Bot(command_prefix='!')
 info_dir = os.path.join(os.path.dirname(__file__), 'info')
-
-owner_user_id = None
-owner_user_id_file = os.path.join(info_dir, 'owner_id.txt')
-
-with open(owner_user_id_file, 'r') as fr:
-    owner_user_id = int(fr.read().strip())
-
-bot_channel_id_file = os.path.join(info_dir, 'bot_channel_id.txt')
-bot_channel_id = None
-with open(bot_channel_id_file, 'r') as fr:
-    bot_channel_id = int(fr.read().strip())
-
 
 async def get_owner():
     try:
