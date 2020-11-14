@@ -202,20 +202,55 @@ class Cute(commands.Cog):
 
 
 class Random(commands.Cog):
+    random_dir = os.path.join(
+        info_dir,
+        'random'
+    )
+    random_files = os.listdir(random_dir)
+
+    lists = dict()
+
+    @classmethod
+    def ensure_file_loaded(cls, file, name):
+        if name in cls.lists:
+            return
+        filepath = os.path.join(cls.random_dir, file)
+        with open(filepath, 'r') as fr:
+            lines = fr.read().strip().split('\n')
+        lines = [l.strip() for l in lines]
+        cls.lists[name] = lines
+
+    @classmethod
+    def get_random_line(cls, name):
+        return random.choice(cls.lists[name])
+
     @commands.command()
     async def house(self, ctx):
         'a random quote from House MD, from http://www.housemd-guide.com/characters/houserules.php'
-        await ctx.send(random.choice(house_quotes))
-
-    @commands.command()
-    async def sw(self, ctx):
-        'a random quote from Star Wars, from https://www.starwars.com/news/40-memorable-star-wars-quotes'
-        await ctx.send(random.choice(star_wars_quotes))
+        key = 'house'
+        self.ensure_file_loaded('house_quotes.txt', key)
+        await ctx.send(self.get_random_line(key))
 
     @commands.command()
     async def m8(self, ctx):
-        'shake a magic 8 ball'
-        await ctx.send(random.choice(m8_ball_msgs))
+        'shake a magic 8 ball, from http://www.otcpas.com/advisor-blog/magic-8-ball-messages/'
+        key = 'm8'
+        self.ensure_file_loaded('m8_ball_msgs.txt', key)
+        await ctx.send(self.get_random_line(key))
+
+    @commands.command(aliases=['sw'])
+    async def starwars(self, ctx):
+        'star wars quotes, from https://www.starwars.com/news/40-memorable-star-wars-quotes'
+        key = 'starwars'
+        self.ensure_file_loaded('star_wars_quotes.txt', key)
+        await ctx.send(self.get_random_line(key))
+
+    @commands.command(aliases='doctor who'.split())
+    async def drwho(self, ctx):
+        'Doctor Who quotes from https://www.scarymommy.com/doctor-who-quotes/'
+        key = 'drwho'
+        self.ensure_file_loaded('doctor_who.txt', key)
+        await ctx.send(self.get_random_line(key))
 
 
 class Admin(commands.Cog):
@@ -226,7 +261,6 @@ class Admin(commands.Cog):
         'open a terminal debug'
         if not await authorized(ctx):
             return
-        # REMOVE
         try:
             import readline
         except ImportError:
@@ -236,7 +270,6 @@ class Admin(commands.Cog):
         except ImportError:
             import pdb
         pdb.set_trace()
-        # REMOVE
         await ctx.send(f'done debugging')
 
     @commands.command(aliases=['mc'])
@@ -248,15 +281,6 @@ class Admin(commands.Cog):
         await bot.wait_until_ready()
         channel = bot.get_channel(channel_id)
         await channel.send(' '.join(message))
-
-    @commands.command()
-    async def curse(self, ctx):
-        'send a message in a given channel'
-        # TODO
-        if not await authorized(ctx):
-            return
-        random.shuffle(bad_words)
-        await ctx.send(' '.join(bad_words))
 
     @commands.command(aliases=['rs'])
     async def restart(self, ctx):
@@ -384,17 +408,10 @@ async def before():
     print("Finished waiting")
 
 if __name__ == '__main__':
-    house_quotes = load_file('house_quotes.txt')
-    star_wars_quotes = load_file('star_wars_quotes.txt')
-    m8_ball_msgs = load_file('m8_ball_msgs.txt')
-
     # called_every_10s.start()
     bot.add_cog(Admin(bot))
     bot.add_cog(Utilities(bot))
+    bot.add_cog(Information(bot))
     bot.add_cog(Cute(bot))
     bot.add_cog(Random(bot))
-    bot.add_cog(Information(bot))
-
     bot.run(TOKEN)
-
-
