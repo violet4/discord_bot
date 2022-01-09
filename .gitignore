@@ -5,3 +5,4 @@ info/bad_words.txt
 info/bot_channel_id.txt
 info/owner_id.txt
 info/todos.txt
+Pipfile.lock

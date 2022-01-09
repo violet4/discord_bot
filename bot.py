@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 2020-11-05
 started from:
@@ -10,20 +10,22 @@ necessary in on_message, and also explains how to make subcommands.
 
 """
 import re
-import requests
 import random
-import numpy as np
-from envbash import load_envbash
+import configparser
 import os
 from discord.ext import commands, tasks
 from discord.enums import Status
 
-load_envbash('env.txt')
-TOKEN = os.getenv('DISCORD_TOKEN')
-bot_channel_id = int(os.getenv('bot_channel_id'))
-owner_user_id = int(os.getenv('owner_user_id'))
 
-# GUILD = os.getenv('DISCORD_GUILD')
+parser = configparser.ConfigParser()
+parser.read('env.txt')
+config = dict(parser['default'])
+
+TOKEN = config['discord_token']
+bot_channel_id = int(config['bot_channel_id'])
+owner_user_id = int(config['owner_user_id'])
+
+GUILD = config['discord_guild']
 
 # client = discord.Client()
 bot = commands.Bot(command_prefix='!')
@@ -349,71 +351,20 @@ class Utilities(commands.Cog):
         )
 
 
-class Information(commands.Cog):
-    @commands.command()
-    async def weather(self, ctx, zipcode):
-        'get the weather for a given zip code'
-        if not zipcode.isnumeric() or len(zipcode) != 5:
-            await ctx.send("invalid zipcode")
-            return
-        await bot.wait_until_ready()
-        resp = requests.get(f'https://wttr.in/{zipcode}')
-        short = resp.text
-        # short = '└'.join(short.split('└', 2)[:2])
-        for color_code in set(re.findall(r'\x1b[^m]+m', short)):
-            short = short.replace(color_code, '')
+# @tasks.loop(hours=1)
+# async def called_every_10s():
+#     message_channel = bot.get_channel(774145104365617203)
+#     await message_channel.send("Your message")
 
-        longest_line = 0
-        chars = list()
-        for line in short.strip().split('\n'):
-            chars.append(list())
-            longest_line = max(longest_line, len(line))
-            for c in line:
-                chars[-1].append(c)
-        for lst in chars:
-            lst.extend(['']*(longest_line-len(lst)))
-
-        array = np.array(chars)
-
-        days = [
-            'today',
-            'tomorrow',
-            'the day after tomorrow',
-        ]
-        times_of_day = 'morning noon evening night'.split()
-        this_window = ''
-        for day, col in zip(days, range(3)):
-            col *= 10
-            for tod, row in zip(times_of_day, range(4)):
-                row *= 32
-                window = '\n'.join([''.join(l) for l in array[11-1+col:16+col, 2+row:29+row]])
-                window = f'{day} {tod}\n```{window}```\n'
-                if len(this_window) + len(window) > 2000:
-                    await ctx.send(this_window)
-                    this_window = window
-                else:
-                    this_window += window
-
-        # final send
-        await ctx.send(this_window)
-        await ctx.send(f'credits `https://wttr.in` `https://twitter.com/igor_chubin`')
-
-
-@tasks.loop(hours=1)
-async def called_every_10s():
-    message_channel = bot.get_channel(774145104365617203)
-    await message_channel.send("Your message")
-
-@called_every_10s.before_loop
-async def before():
-    await bot.wait_until_ready()
-    print("Finished waiting")
+# @called_every_10s.before_loop
+# async def before():
+#     await bot.wait_until_ready()
+#     print("Finished waiting")
 
 if __name__ == '__main__':
     # called_every_10s.start()
     bot.add_cog(Admin(bot))
     bot.add_cog(Utilities(bot))
-    bot.add_cog(Information(bot))
     bot.add_cog(Cute(bot))
     bot.add_cog(Random(bot))
     bot.run(TOKEN)
